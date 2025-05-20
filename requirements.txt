@@ -1,9 +1,4 @@
-pyrogram
+pyrogram==2.0.106
 tgcrypto
-flask
 requests
-pillow
-moviepy
-imageio
-imageio-ffmpeg
-numpy
+flask
