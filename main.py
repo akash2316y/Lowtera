@@ -49,51 +49,51 @@ async def start_command(client, message):
 
 @bot.on_message(filters.text & ~filters.command("start"))
 async def handle_terabox(client, message):
-    url = message.text.strip()
+url = message.text.strip()
 
-    try:
-        r = requests.get(TERABOX_API.format(url))
-        data = r.json()
+try:  
+    r = requests.get(TERABOX_API.format(url))  
+    data = r.json()  
 
-        if isinstance(data, list):
-            data = data[0]
+    # Check if the response is a list  
+    if isinstance(data, list):  
+        data = data[0]  # Use first item in the list  
 
-        direct_link = data.get("direct_link")
-        filename = data.get("filename")
-        original_link = data.get("link")
-        size = data.get("size")
+    direct_link = data.get("direct_link")  
+    filename = data.get("filename")  
+    original_link = data.get("link")  
+    size = data.get("size")  
+    thumbnail = data.get("thumbnail")  
 
-        if not direct_link:
-            await message.reply_text("Kuch galti ho gayi, direct link nahi mila.")
-            return
+    if not direct_link:  
+        await message.reply_text("Kuch galti ho gayi, direct link nahi mila.")  
+        return  
 
-        caption = (
-            f"**File:** `{filename}`\n"
-            f"**Size:** `{size}`\n\n"
-            f"🎬 How To Watch Video, Click here\n\n"
-            f"🔗 [Original Terabox Link]({original_link})"
-        )
+    caption = (  
+        f"**File:** `{filename}`\n"  
+        f"**Size:** `{size}`\n\n"  
+        f"🎬 How To Watch Video, Click here\n\n"  
+        f"🔗 [Original Terabox Link]({original_link})"  
+    )  
 
-        buttons = [
-            [InlineKeyboardButton("ɴᴏʀᴍᴀʟ ᴅᴏᴡɴʟᴏᴀᴅ", url=direct_link)],
-            [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]
-        ]
+    buttons = [  
+        [InlineKeyboardButton("ɴᴏʀᴍᴀʟ ᴅᴏᴡɴʟᴏᴀᴅ", url=direct_link)],  
+        [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]  
+    ]  
 
-        thumbnail = generate_spoiled_thumbnail(direct_link)
+    if thumbnail:  
+        await message.reply_photo(  
+            photo=thumbnail,  
+            caption=caption,  
+            reply_markup=InlineKeyboardMarkup(buttons)  
+        )  
+    else:  
+        await message.reply_text(  
+            text=caption,  
+            reply_markup=InlineKeyboardMarkup(buttons)  
+        )  
 
-        if thumbnail:
-            await message.reply_photo(
-                photo=thumbnail,
-                caption=caption,
-                reply_markup=InlineKeyboardMarkup(buttons)
-            )
-        else:
-            await message.reply_text(
-                text=caption,
-                reply_markup=InlineKeyboardMarkup(buttons)
-            )
-
-    except Exception as e:
-        await message.reply_text(f"Error: {e}")
+except Exception as e:  
+    await message.reply_text(f"Error: {e}")
 
 bot.run()
