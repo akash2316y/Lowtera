@@ -5,7 +5,7 @@ import os
 
 API_ID = int(os.getenv("27705761"))
 API_HASH = os.getenv("822cb334ca4527a134aae97f9fe44fd6")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("7265397687:AAHqhoqZXisfyN0NaqNRyETW0j1bvNLOsSk")
 
 bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -41,8 +41,8 @@ async def handle_terabox(client, message):
         )
 
         buttons = [
-            [InlineKeyboardButton("▶️ Direct Download", url=direct_link)],
-            [InlineKeyboardButton("🔗 Terabox Page", url=original_link)]
+            [InlineKeyboardButton("ɴᴏʀᴍᴀʟ ᴅᴏᴡɴʟᴏᴀᴅ", url=direct_link)],
+            [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]
         ]
 
         if thumbnail:
