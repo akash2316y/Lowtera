@@ -2,13 +2,13 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 
-API_ID = 123456  # Your API ID
-API_HASH = "your_api_hash"
-BOT_TOKEN = "your_bot_token"
+API_ID = 27705761  # Your API ID
+API_HASH = "822cb334ca4527a134aae97f9fe44fd6"
+BOT_TOKEN = "7265397687:AAHqhoqZXisfyN0NaqNRyETW0j1bvNLOsSk"
 
 bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-TERABOX_API = "https://terabox.web.id/url?url={}&token=akash_8110231942"
+TERABOX_API = "https://terabox.web.id/url?url={url}&token=akash_8110231942"
 
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
