@@ -4,7 +4,10 @@ import requests
 import os
 import threading
 from flask import Flask
+from PIL import Image, ImageFilter
+import io
 
+# Flask setup
 app = Flask(__name__)
 
 @app.route('/')
@@ -14,9 +17,9 @@ def home():
 def run_flask():
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
-# Start Flask in background
 threading.Thread(target=run_flask).start()
 
+# Pyrogram config
 API_ID = int(os.getenv("API_ID"))   
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -37,9 +40,8 @@ async def handle_terabox(client, message):
         r = requests.get(TERABOX_API.format(url))
         data = r.json()
 
-        # Check if the response is a list
         if isinstance(data, list):
-            data = data[0]  # Use first item in the list
+            data = data[0]
 
         direct_link = data.get("direct_link")
         filename = data.get("filename")
@@ -64,8 +66,16 @@ async def handle_terabox(client, message):
         ]
 
         if thumbnail:
+            thumb_data = requests.get(thumbnail).content
+            img = Image.open(io.BytesIO(thumb_data))
+            blurred_img = img.filter(ImageFilter.GaussianBlur(12))
+
+            buffer = io.BytesIO()
+            blurred_img.save(buffer, format='JPEG')
+            buffer.seek(0)
+
             await message.reply_photo(
-                photo=thumbnail,
+                photo=buffer,
                 caption=caption,
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
