@@ -4,3 +4,6 @@ flask
 requests
 pillow
 moviepy
+imageio
+imageio-ffmpeg
+numpy
