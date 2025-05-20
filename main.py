@@ -3,9 +3,9 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 import os
 
-API_ID = int(os.getenv("27705761"))
-API_HASH = os.getenv("822cb334ca4527a134aae97f9fe44fd6")
-BOT_TOKEN = os.getenv("7265397687:AAHqhoqZXisfyN0NaqNRyETW0j1bvNLOsSk")
+API_ID = int(os.getenv("API_ID"))   
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
