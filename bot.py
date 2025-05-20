@@ -40,8 +40,8 @@ async def handle_terabox(client, message):
         )
 
         buttons = [
-            [InlineKeyboardButton("▶️ Direct Download", url=direct_link)],
-            [InlineKeyboardButton("🔗 Terabox Page", url=original_link)]
+            [InlineKeyboardButton("ɴᴏʀᴍᴀʟ ᴅᴏᴡɴʟᴏᴀᴅ", url=direct_link)],
+            [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]
         ]
 
         await message.reply_photo(
