@@ -23,7 +23,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-TERABOX_API = "https://terabox.web.id/url?url={}&token=akash_8110231942"
+TERABOX_API = "https://terabox.web.id/url?url={url}&token=akash_8110231942"
 
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
