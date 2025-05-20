@@ -1,13 +1,11 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import requests
-import os
-import threading
+import requests, os, threading, io
 from flask import Flask
 from PIL import Image, ImageFilter
-import io
+from moviepy.editor import VideoFileClip
+import tempfile
 
-# Flask setup
 app = Flask(__name__)
 
 @app.route('/')
@@ -19,14 +17,31 @@ def run_flask():
 
 threading.Thread(target=run_flask).start()
 
-# Pyrogram config
-API_ID = int(os.getenv("API_ID"))   
+API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 TERABOX_API = "https://terabox.web.id/url?url={}&token=akash_8110231942"
+
+def generate_spoiled_thumbnail(video_url):
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+            tmp.write(requests.get(video_url).content)
+            tmp.flush()
+            clip = VideoFileClip(tmp.name)
+            frame = clip.get_frame(1.0)  # first second
+            img = Image.fromarray(frame).convert("RGB")
+            blurred_img = img.filter(ImageFilter.GaussianBlur(10))
+
+            buffer = io.BytesIO()
+            blurred_img.save(buffer, format="JPEG")
+            buffer.seek(0)
+            return buffer
+    except Exception as e:
+        print("Thumbnail error:", e)
+        return None
 
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
@@ -47,7 +62,6 @@ async def handle_terabox(client, message):
         filename = data.get("filename")
         original_link = data.get("link")
         size = data.get("size")
-        thumbnail = data.get("thumbnail")
 
         if not direct_link:
             await message.reply_text("Kuch galti ho gayi, direct link nahi mila.")
@@ -65,17 +79,11 @@ async def handle_terabox(client, message):
             [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]
         ]
 
+        thumbnail = generate_spoiled_thumbnail(direct_link)
+
         if thumbnail:
-            thumb_data = requests.get(thumbnail).content
-            img = Image.open(io.BytesIO(thumb_data))
-            blurred_img = img.filter(ImageFilter.GaussianBlur(12))
-
-            buffer = io.BytesIO()
-            blurred_img.save(buffer, format='JPEG')
-            buffer.seek(0)
-
             await message.reply_photo(
-                photo=buffer,
+                photo=thumbnail,
                 caption=caption,
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
