@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 import random, string, os, threading
 from flask import Flask
 
-# Flask keep-alive server
+# Flask server to keep bot alive
 app = Flask(__name__)
 
 @app.route('/')
@@ -19,23 +19,26 @@ API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-bot = Client("insta_3char_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+bot = Client("trendy_usernames_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Generate 3-letter usernames
-def generate_usernames(count):
-    return [
-        ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-        for _ in range(count)
-    ]
+# Trending username generator like `dy3no`, `rx1zy`, etc.
+def generate_trendy(count):
+    usernames = []
+    for _ in range(count):
+        part1 = ''.join(random.choices(string.ascii_lowercase, k=2))     # e.g., dy
+        part2 = ''.join(random.choices(string.digits, k=1))              # e.g., 3
+        part3 = ''.join(random.choices(string.ascii_lowercase, k=2))     # e.g., no
+        usernames.append(part1 + part2 + part3)
+    return usernames
 
 @bot.on_message(filters.command("start"))
 async def start(_, msg):
-    await msg.reply("Send /get to receive 3-letter Instagram-style usernames.")
+    await msg.reply("Send /get to get 50 trending-style usernames (like dy3no, rx7zy).")
 
 @bot.on_message(filters.command("get"))
 async def get(_, msg):
-    names = generate_usernames(30)  # Generate 30 usernames
+    names = generate_trendy(50)
     result = "\n".join([f"`{u}` - Available" for u in names])
-    await msg.reply(f"Here are 3-letter usernames:\n\n{result}")
+    await msg.reply(f"Here are 50 trending-style usernames:\n\n{result}")
 
 bot.run()
