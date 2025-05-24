@@ -1,99 +1,23 @@
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import requests, os, threading, io
-from flask import Flask
-from PIL import Image, ImageFilter
-from moviepy.editor import VideoFileClip
-import tempfile
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running"
-
-def run_flask():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
-threading.Thread(target=run_flask).start()
+import random, string, os
 
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-bot = Client("terabox_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("insta_username_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-TERABOX_API = "https://terabox.web.id/url?url={}&token=akash_8110231942"
+@app.on_message(filters.command("start"))
+async def start(_, msg):
+    await msg.reply("Welcome! Send /get to get 5-letter random Instagram usernames.")
 
-def generate_spoiled_thumbnail(video_url):
-    try:
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
-            tmp.write(requests.get(video_url).content)
-            tmp.flush()
-            clip = VideoFileClip(tmp.name)
-            frame = clip.get_frame(1.0)  # first second
-            img = Image.fromarray(frame).convert("RGB")
-            blurred_img = img.filter(ImageFilter.GaussianBlur(10))
+@app.on_message(filters.command("get"))
+async def get(_, msg):
+    def generate():  # Generate 5-letter username
+        return ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
+    
+    usernames = [generate() for _ in range(5)]  # Generate 5 usernames
+    result = "\n".join([f"`{u}` - Available" for u in usernames])
+    await msg.reply(f"Here are some Instagram-style usernames:\n\n{result}")
 
-            buffer = io.BytesIO()
-            blurred_img.save(buffer, format="JPEG")
-            buffer.seek(0)
-            return buffer
-    except Exception as e:
-        print("Thumbnail error:", e)
-        return None
-
-@bot.on_message(filters.command("start"))
-async def start_command(client, message):
-    await message.reply_text("Send Me Terabox Links.")
-
-@bot.on_message(filters.text & ~filters.command("start"))
-async def handle_terabox(client, message):
-url = message.text.strip()
-
-try:  
-    r = requests.get(TERABOX_API.format(url))  
-    data = r.json()  
-
-    # Check if the response is a list  
-    if isinstance(data, list):  
-        data = data[0]  # Use first item in the list  
-
-    direct_link = data.get("direct_link")  
-    filename = data.get("filename")  
-    original_link = data.get("link")  
-    size = data.get("size")  
-    thumbnail = data.get("thumbnail")  
-
-    if not direct_link:  
-        await message.reply_text("Kuch galti ho gayi, direct link nahi mila.")  
-        return  
-
-    caption = (  
-        f"**File:** `{filename}`\n"  
-        f"**Size:** `{size}`\n\n"  
-        f"🎬 How To Watch Video, Click here\n\n"  
-        f"🔗 [Original Terabox Link]({original_link})"  
-    )  
-
-    buttons = [  
-        [InlineKeyboardButton("ɴᴏʀᴍᴀʟ ᴅᴏᴡɴʟᴏᴀᴅ", url=direct_link)],  
-        [InlineKeyboardButton("ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=original_link)]  
-    ]  
-
-    if thumbnail:  
-        await message.reply_photo(  
-            photo=thumbnail,  
-            caption=caption,  
-            reply_markup=InlineKeyboardMarkup(buttons)  
-        )  
-    else:  
-        await message.reply_text(  
-            text=caption,  
-            reply_markup=InlineKeyboardMarkup(buttons)  
-        )  
-
-except Exception as e:  
-    await message.reply_text(f"Error: {e}")
-
-bot.run()
+app.run()
