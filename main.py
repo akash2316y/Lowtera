@@ -23,20 +23,19 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Client("insta_username_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Username generator: Starts with "e" + 4 random letters/digits
+# Username generator: only 5 lowercase letters (like 'ezkqw')
 def generate_usernames(count):
-    pool = string.ascii_lowercase + string.digits
-    return ['e' + ''.join(random.choices(pool, k=4)) for _ in range(count)]
+    return [''.join(random.choices(string.ascii_lowercase, k=5)) for _ in range(count)]
 
 # Check Instagram username availability
 def is_available_instagram(username):
     url = f"https://www.instagram.com/{username}/"
     response = requests.get(url)
-    return response.status_code == 404  # 404 means it's available
+    return response.status_code == 404  # 404 = Available
 
 @bot.on_message(filters.command("start"))
 async def start(_, msg):
-    await msg.reply("Send /get to get 10 available Instagram usernames starting with 'e' (like `e1z9x`).")
+    await msg.reply("Send /get to get 10 available Instagram usernames (5 lowercase letters only).")
 
 @bot.on_message(filters.command("get"))
 async def get(_, msg):
@@ -45,15 +44,15 @@ async def get(_, msg):
     available = []
     tries = 0
 
-    while len(available) < 10 and tries < 50:  # Max 50 tries to find 10 available
+    while len(available) < 10 and tries < 50:  # Check up to 50 usernames
         username = generate_usernames(1)[0]
         if is_available_instagram(username):
             available.append(username)
         tries += 1
-        time.sleep(0.5)  # Add delay to avoid getting blocked
+        time.sleep(0.5)  # Delay to avoid rate limits
 
     if not available:
-        await msg.reply("😔 Couldn't find any available usernames. Try again.")
+        await msg.reply("😔 Couldn't find available usernames. Try again.")
         return
 
     result = "\n".join([f"`{u}` - ✅ Available" for u in available])
