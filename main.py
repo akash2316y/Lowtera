@@ -1,8 +1,10 @@
 from pyrogram import Client, filters
 import random, string, os, threading
+import requests
 from flask import Flask
+import time
 
-# Flask server to keep bot alive
+# Flask keep-alive
 app = Flask(__name__)
 
 @app.route('/')
@@ -14,31 +16,47 @@ def run_flask():
 
 threading.Thread(target=run_flask).start()
 
-# Telegram bot setup
+# Bot credentials
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-bot = Client("trendy_usernames_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+bot = Client("insta_username_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Trending username generator like `dy3no`, `rx1zy`, etc.
-def generate_trendy(count):
-    usernames = []
-    for _ in range(count):
-        part1 = ''.join(random.choices(string.ascii_lowercase, k=2))     # e.g., dy
-        part2 = ''.join(random.choices(string.digits, k=1))              # e.g., 3
-        part3 = ''.join(random.choices(string.ascii_lowercase, k=2))     # e.g., no
-        usernames.append(part1 + part2 + part3)
-    return usernames
+# Username generator: Starts with "e" + 4 random letters/digits
+def generate_usernames(count):
+    pool = string.ascii_lowercase + string.digits
+    return ['e' + ''.join(random.choices(pool, k=4)) for _ in range(count)]
+
+# Check Instagram username availability
+def is_available_instagram(username):
+    url = f"https://www.instagram.com/{username}/"
+    response = requests.get(url)
+    return response.status_code == 404  # 404 means it's available
 
 @bot.on_message(filters.command("start"))
 async def start(_, msg):
-    await msg.reply("Send /get to get 50 trending-style usernames (like dy3no, rx7zy).")
+    await msg.reply("Send /get to get 10 available Instagram usernames starting with 'e' (like `e1z9x`).")
 
 @bot.on_message(filters.command("get"))
 async def get(_, msg):
-    names = generate_trendy(50)
-    result = "\n".join([f"`{u}` - Available" for u in names])
-    await msg.reply(f"Here are 50 trending-style usernames:\n\n{result}")
+    await msg.reply("🔍 Checking Instagram usernames. Please wait...")
+
+    available = []
+    tries = 0
+
+    while len(available) < 10 and tries < 50:  # Max 50 tries to find 10 available
+        username = generate_usernames(1)[0]
+        if is_available_instagram(username):
+            available.append(username)
+        tries += 1
+        time.sleep(0.5)  # Add delay to avoid getting blocked
+
+    if not available:
+        await msg.reply("😔 Couldn't find any available usernames. Try again.")
+        return
+
+    result = "\n".join([f"`{u}` - ✅ Available" for u in available])
+    await msg.reply(f"Here are 10 available Instagram usernames:\n\n{result}")
 
 bot.run()
